@@ -13,17 +13,25 @@ public class PlayerController : MonoBehaviour
     public bool invertLook;
 
     public float moveSpeed = 5f, runSpeed = 8f;
-
     private float activeMoveSpeed;
-
     private Vector3 moveDir, movement;
 
     public CharacterController charCon;
+
+    private Camera cam;
+
+    public float jumpForce = 7.5f, gravityMod = 2.5f;
+
+    public Transform groundCheckPoint;
+    private bool isGrounded;
+    public LayerMask groundLayers;
 
     // Start is called before the first frame update
     void Start()
     {
         Cursor.lockState = CursorLockMode.Locked;
+
+        cam = Camera.main;
     }
 
     // Update is called once per frame
@@ -57,9 +65,46 @@ public class PlayerController : MonoBehaviour
             activeMoveSpeed = moveSpeed;
         }
 
+
+        float yVel = movement.y;
         movement = ((transform.forward * moveDir.z) + (transform.right *moveDir.x)).normalized * activeMoveSpeed;
+        movement.y = yVel;
 
-        charCon.Move(movement * activeMoveSpeed * Time.deltaTime);
+        if (charCon.isGrounded)
+        {
+            movement.y = 0f;
+        }
 
+        isGrounded = Physics.Raycast(groundCheckPoint.position, Vector3.down, 0.25f, groundLayers);
+
+        if (Input.GetButtonDown("Jump") && isGrounded)
+        {
+            movement.y = jumpForce;
+        }
+
+        movement.y += Physics.gravity.y * Time.deltaTime * gravityMod;
+
+        charCon.Move(movement * Time.deltaTime);
+
+
+
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            Cursor.lockState = CursorLockMode.None;
+        }
+        else if(Cursor.lockState == CursorLockMode.None)
+        {
+            if (Input.GetMouseButtonDown(0))
+            {
+                Cursor.lockState = CursorLockMode.Locked;
+            }
+        }
+    }
+
+
+    private void LateUpdate()
+    {
+        cam.transform.position = viewPoint.position;
+        cam.transform.rotation = viewPoint.rotation;
     }
 }
