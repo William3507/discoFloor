@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Photon.Pun;
 using TMPro;
+using Photon.Realtime;
 
 public class Launcher : MonoBehaviourPunCallbacks
 {
@@ -18,6 +19,9 @@ public class Launcher : MonoBehaviourPunCallbacks
     public TMP_Text loadingText;
 
     public GameObject menuButtons;
+
+    public GameObject createRoomScreen;
+    public TMP_InputField roomNameInput;
 
 
     // Start is called before the first frame update
@@ -36,6 +40,7 @@ public class Launcher : MonoBehaviourPunCallbacks
     {
         loadingScreen.SetActive(false);
         menuButtons.SetActive(false);
+        createRoomScreen.SetActive(false);
     }
 
     public override void OnConnectedToMaster()
@@ -51,9 +56,26 @@ public class Launcher : MonoBehaviourPunCallbacks
         menuButtons.SetActive(true);
     }
 
-    // Update is called once per frame
-    void Update()
+
+    public void openRoomCreate()
     {
-        
+        CloseMenus();
+        createRoomScreen.SetActive(true);
+    }
+
+    public void createRoom()
+    {
+        if (!string.IsNullOrEmpty(roomNameInput.text))
+        {
+            RoomOptions options = new RoomOptions();
+
+            options.MaxPlayers = 8;
+
+            PhotonNetwork.CreateRoom(roomNameInput.text, options);
+
+            CloseMenus();
+            loadingText.text = "Creating Room...";
+            loadingScreen.SetActive(true);
+        }
     }
 }
